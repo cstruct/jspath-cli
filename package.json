@@ -1,0 +1,29 @@
+{
+  "name": "jspath-cli",
+  "version": "0.1.0",
+  "description": "A small CLI wrapper around jspath.",
+  "main": "index.js",
+  "bin": {
+    "jspath": "./bin/jspath"
+  },
+  "scripts": {
+    "test": "standard && mocha",
+    "cover": "istanbul cover _mocha",
+    "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
+  },
+  "keywords": [
+    "jspath"
+  ],
+  "author": "Albin Mattsson <albin.mattsson@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "coveralls": "^2.11.6",
+    "istanbul": "^0.4.2",
+    "mocha": "^2.4.5",
+    "mocha-lcov-reporter": "^1.1.0",
+    "standard": "^6.0.5"
+  },
+  "dependencies": {
+    "jspath": "latest"
+  }
+}

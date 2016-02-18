@@ -1,0 +1,109 @@
+/* eslint-env mocha */
+
+'use strict'
+
+const assert = require('assert')
+const stream = require('stream')
+const packageJson = require('./package.json')
+const mockData = require('./mock.json')
+const cli = require('./index.js')
+
+const matchOutput = 'bar\n'
+
+const helpOutput = `Usage:
+  \tjspath <jspath> (file | [-])
+  \tjspath -h | --help
+  \tjspath --version
+
+  Options:
+  \t-h --help\tShow this message.
+  \t--version\tShow version.
+`
+
+const versionOutput = `Version: ${packageJson.version}\n`
+
+const validFile = 'mock.json'
+const invalidFile = 'someNoneExistentFile.json'
+
+const noJsPathError = 'No JSPath specified.\n'
+const noFileOrStdinError = 'File or stdin needs to be specified.\n'
+const fileError = `ENOENT: no such file or directory, open '${invalidFile}'\n`
+const jsonError = 'JSON parse error: Unexpected token a\n'
+const jsPathError = 'JSPath error: Unexpected token "£"\n'
+
+const validJson = JSON.stringify(mockData)
+const invalidJson = 'abc123'
+
+const validJsPath = '.foo'
+const invalidJsPath = '££'
+
+function assertOutput (args, stdinContent, expectedStderr, expectedStdout, done) {
+  let stdoutContent = ''
+  let stderrContent = ''
+
+  const stdin = new stream.Readable()
+  stdin.readable = true
+  stdin.destroy = () => {}
+  stdinContent && stdin.push(stdinContent)
+  stdin.push(null)
+  const stdout = new stream.Writable({
+    write: (chunk, encoding, next) => {
+      stdoutContent += chunk.toString()
+      next()
+    }
+  })
+  const stderr = new stream.Writable({
+    write: (chunk, encoding, next) => {
+      stderrContent += chunk.toString()
+      next()
+    }
+  })
+
+  const process = {
+    argv: ['', ''].concat(args),
+    stdin,
+    stdout,
+    stderr,
+    exit: () => {
+      assert.equal(stderrContent, expectedStderr)
+      assert.equal(stdoutContent, expectedStdout)
+
+      done()
+    }
+  }
+
+  cli(process)
+}
+
+describe('JSPath CLI', () => {
+  it('Show help for -h', (done) => {
+    assertOutput(['-h'], null, '', helpOutput, done)
+  })
+  it('Show help for --help', (done) => {
+    assertOutput(['--help'], null, '', helpOutput, done)
+  })
+  it('Show version for --version', (done) => {
+    assertOutput(['--version'], null, '', versionOutput, done)
+  })
+  it('Accept valid JSPath and valid file', (done) => {
+    assertOutput([validJsPath, validFile], null, '', matchOutput, done)
+  })
+  it('Accept valid JSPath and valid stdin', (done) => {
+    assertOutput([validJsPath], validJson, '', matchOutput, done)
+  })
+  it('Print error and help on no JSPath', (done) => {
+    assertOutput([], null, noJsPathError, helpOutput, done)
+  })
+  it('Print error and help on no file or stdin', (done) => {
+    assertOutput([validJsPath], null, noFileOrStdinError, helpOutput, done)
+  })
+  it('Print error and help on file read error', (done) => {
+    assertOutput([validJsPath, invalidFile], null, fileError, helpOutput, done)
+  })
+  it('Print error and help on invalid JSON', (done) => {
+    assertOutput([validJsPath], invalidJson, jsonError, helpOutput, done)
+  })
+  it('Print error and help on invalid JSPath', (done) => {
+    assertOutput([invalidJsPath], validJson, jsPathError, helpOutput, done)
+  })
+})
