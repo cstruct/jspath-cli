@@ -9,13 +9,13 @@ module.exports = (process) => {
   process.makeError = makeError.bind(process)
   process.readStdin = readStdin.bind(process)
   process.dataRead = dataRead.bind(process)
-  process.code = 0
+  process.exitCode = 0
 
   const firstArg = process.argv.length > 2 ? process.argv[ 2 ] : null
   const filePathArg = process.argv.length > 3 ? process.argv[ 3 ] : null
 
   if (firstArg === '-h' || firstArg === '--help') return process.printUsage()
-  else if (firstArg === '--version') return process.stdout.write(`Version: ${packageJson.version}\n`) && process.exit(process.code)
+  else if (firstArg === '--version') return process.stdout.write(`Version: ${packageJson.version}\n`) && process.exit()
 
   if (typeof firstArg !== 'string') return process.makeError('No JSPath specified.')
   else process.readStdin(firstArg, filePathArg)
@@ -49,7 +49,7 @@ function dataRead (jsPathQuery, data) {
   try {
     const res = jsPath.apply(jsPathQuery, parsedData)
     this.stdout.write(`${res}\n`)
-    this.exit(this.code)
+    this.exit()
   } catch (e) {
     return this.makeError(`JSPath error: ${e.message}`)
   }
@@ -57,7 +57,7 @@ function dataRead (jsPathQuery, data) {
 
 function makeError (error) {
   this.stderr.write(`${error}\n`)
-  this.code = 1
+  this.exitCode = 1
   this.printUsage()
 }
 
@@ -71,5 +71,5 @@ function printUsage () {
   \t-h --help\tShow this message.
   \t--version\tShow version.\n`)
 
-  this.exit(this.code)
+  this.exit()
 }
