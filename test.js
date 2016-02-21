@@ -101,3 +101,24 @@ describe('JSPath CLI', () => {
     assertOutput(['€€'], JSON.stringify(mockData), jsPathError, helpOutput, done)
   })
 })
+
+describe('JSPath CLI output', () => {
+  it('Print newline for unmatched JSPath', (done) => {
+    assertOutput(['.z'], JSON.stringify(mockData), '', '\n', done)
+  })
+  it('Print matched string', (done) => {
+    assertOutput(['.c[1]'], JSON.stringify(mockData), '', '"a"\n', done)
+  })
+  it('Print matched number', (done) => {
+    assertOutput(['.b'], JSON.stringify(mockData), '', '2\n', done)
+  })
+  it('Print matched boolean', (done) => {
+    assertOutput(['.c[2]'], JSON.stringify(mockData), '', 'false\n', done)
+  })
+  it('Print matched array', (done) => {
+    assertOutput(['.c'], JSON.stringify(mockData), '', '[1,"a",false]\n', done)
+  })
+  it('Print matched object', (done) => {
+    assertOutput(['.a'], JSON.stringify(mockData), '', '{"a1":1}\n', done)
+  })
+})

@@ -48,11 +48,14 @@ function dataRead (jsPathQuery, data) {
   }
   try {
     const res = jsPath.apply(jsPathQuery, parsedData)
-    this.stdout.write(`${res}\n`)
-    this.exit()
+    if (res.length === 0) this.stdout.write('\n')
+    else if (res.length === 1) this.stdout.write(`${JSON.stringify(res[0])}\n`)
+    else this.stdout.write(`${JSON.stringify(res)}\n`)
   } catch (e) {
     return this.makeError(`JSPath error: ${e.message}`)
   }
+
+  this.exit()
 }
 
 function makeError (error) {
