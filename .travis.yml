@@ -1,6 +1,14 @@
 language: node_js
 node_js:
-  - "5.6"
-  - "4.3"
+- '5.6'
+- '4.3'
 after_success:
-  - npm run coveralls
+- npm run coveralls
+deploy:
+  provider: npm
+  email: albin.mattsson@gmail.com
+  api_key:
+    secure: TTWe8vRR2yracjCLK0yAcWcTOe//m1En4n9dl/LVzUmBFPAXqXoBA3aw9sCVvRjftB1MYD92dJhBC1tD32hu61nyfsi7/UXMurhG5OBUmkAmqGN3fYRuQbQVfF8x/GHq32cC5f0qspOGfLxYjBOwdAly1Hnp5b8DZ8ZdrrL2pEdqP5ATkn98/+SK4GJ7CiD05GZ+/RHP4Ui3f0UvjSmKzO6exTyUd/pTHyHz3FhDRezZnMKZPnpvGMghbCh2yr9BIJ1LzrTNisolEYm9c9ECF24o0XZ27CSeH/p0hG+hwWP3uytNQYptpd1OPVZ6ENBNZr/dE4mlJgM/MRngnPDcCpe1g1HRn3sUCd3M+e1xc5S37YSNFOanXWDG7CWkfcfUZxm3hleEi6GyAIwdHfcDmZWMdqjSkvOAXLtOYfBuINZolIaswmE3J+DhvCXz8JEHhTTvdUn6qz9Z+GrAe4TnosqE00U/oE6ElJ25+vn2PlOWhfev81iefwzpMdpEP+gBhmQc/LT1H8yPFMkmFE9EjQXbCA0to0wRvYmZB/QzPF7aUlQdA4xw7Yywcw+ETE9oRwTSCRmPscZJjSA6NMayV6wqy1yvNS4gJDZaXzvbleY9eNBF6FYlUsE8cY1HA3eUsTjUATMRuE3B8cBwhtFPz8jDB014isUKGOlwgkqSlaY=
+  on:
+    tags: true
+    repo: cstruct/jspath-cli
