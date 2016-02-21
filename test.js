@@ -103,22 +103,31 @@ describe('JSPath CLI', () => {
 })
 
 describe('JSPath CLI output', () => {
-  it('Print newline for unmatched JSPath', (done) => {
+  it('Prints a newline for unmatched JSPath', (done) => {
     assertOutput(['.z'], JSON.stringify(mockData), '', '\n', done)
   })
-  it('Print matched string', (done) => {
-    assertOutput(['.c[1]'], JSON.stringify(mockData), '', '"a"\n', done)
+  it('Prints matched string unquoted if the strict flag is not set', (done) => {
+    assertOutput(['.c[1]'], JSON.stringify(mockData), '', `${mockData.c[1]}\n`, done)
   })
-  it('Print matched number', (done) => {
-    assertOutput(['.b'], JSON.stringify(mockData), '', '2\n', done)
+  it('Prints matched string quoted if the strict flag is set', (done) => {
+    assertOutput(['-s', '.c[1]'], JSON.stringify(mockData), '', `${mockData.c[1]}\n`, done)
   })
-  it('Print matched boolean', (done) => {
-    assertOutput(['.c[2]'], JSON.stringify(mockData), '', 'false\n', done)
+  it('Prints matched number unquoted in all cases', (done) => {
+    assertOutput(['.b'], JSON.stringify(mockData), '', `${mockData.b}\n`, done)
   })
-  it('Print matched array', (done) => {
-    assertOutput(['.c'], JSON.stringify(mockData), '', '[1,"a",false]\n', done)
+  it('Prints matched boolean unquoted in all cases', (done) => {
+    assertOutput(['.c[2]'], JSON.stringify(mockData), '', `${mockData.c[2]}\n`, done)
   })
-  it('Print matched object', (done) => {
-    assertOutput(['.a'], JSON.stringify(mockData), '', '{"a1":1}\n', done)
+  it('Prints matched array minified if the pretty flag is not set', (done) => {
+    assertOutput(['.c'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.c)}\n`, done)
+  })
+  it('Prints matched object minified if the pretty flag is not set', (done) => {
+    assertOutput(['.a'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.a)}\n`, done)
+  })
+  it('Prints matched array pretty-printed if the pretty flag is set', (done) => {
+    assertOutput(['-p', '.c'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.c)}\n`, done)
+  })
+  it('Prints matched object pretty-printed if the pretty flag is set', (done) => {
+    assertOutput(['-p', '.a'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.a)}\n`, done)
   })
 })
