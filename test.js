@@ -7,8 +7,8 @@ const stream = require('stream')
 const packageJson = require('./package.json')
 const mockData = require('./mock.json')
 const cli = require('./index.js')
-
-const matchOutput = 'bar\n'
+const it = require('mocha/lib/mocha.js').it
+const describe = require('mocha/lib/mocha.js').describe
 
 const helpOutput = `Usage:
   \tjspath <jspath> (file | [-])
@@ -23,19 +23,13 @@ const helpOutput = `Usage:
 const versionOutput = `Version: ${packageJson.version}\n`
 
 const validFile = 'mock.json'
-const invalidFile = 'someNoneExistentFile.json'
+const invalidFile = `someNoneExistentFile${Math.random()}.json`
 
 const noJsPathError = 'No JSPath specified.\n'
 const noFileOrStdinError = 'File or stdin needs to be specified.\n'
 const fileError = `ENOENT: no such file or directory, open '${invalidFile}'\n`
 const jsonError = 'JSON parse error: Unexpected token a\n'
-const jsPathError = 'JSPath error: Unexpected token "£"\n'
-
-const validJson = JSON.stringify(mockData)
-const invalidJson = 'abc123'
-
-const validJsPath = '.foo'
-const invalidJsPath = '££'
+const jsPathError = 'JSPath error: Unexpected token "€"\n'
 
 function assertOutput (args, stdinContent, expectedStderr, expectedStdout, done) {
   let stdoutContent = ''
@@ -86,24 +80,24 @@ describe('JSPath CLI', () => {
     assertOutput(['--version'], null, '', versionOutput, done)
   })
   it('Accept valid JSPath and valid file', (done) => {
-    assertOutput([validJsPath, validFile], null, '', matchOutput, done)
+    assertOutput(['.b', validFile], null, '', '2\n', done)
   })
   it('Accept valid JSPath and valid stdin', (done) => {
-    assertOutput([validJsPath], validJson, '', matchOutput, done)
+    assertOutput(['.b'], JSON.stringify(mockData), '', '2\n', done)
   })
   it('Print error and help on no JSPath', (done) => {
     assertOutput([], null, noJsPathError, helpOutput, done)
   })
   it('Print error and help on no file or stdin', (done) => {
-    assertOutput([validJsPath], null, noFileOrStdinError, helpOutput, done)
+    assertOutput(['.b'], null, noFileOrStdinError, helpOutput, done)
   })
   it('Print error and help on file read error', (done) => {
-    assertOutput([validJsPath, invalidFile], null, fileError, helpOutput, done)
+    assertOutput(['.b', invalidFile], null, fileError, helpOutput, done)
   })
   it('Print error and help on invalid JSON', (done) => {
-    assertOutput([validJsPath], invalidJson, jsonError, helpOutput, done)
+    assertOutput(['.b'], 'abc123', jsonError, helpOutput, done)
   })
   it('Print error and help on invalid JSPath', (done) => {
-    assertOutput([invalidJsPath], validJson, jsPathError, helpOutput, done)
+    assertOutput(['€€'], JSON.stringify(mockData), jsPathError, helpOutput, done)
   })
 })
