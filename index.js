@@ -6,14 +6,25 @@ const packageJson = require('./package.json')
 const minimist = require('minimist')
 
 module.exports = (process) => {
-  var argv = minimist(process.argv.slice(2))
+  var argv = minimist(process.argv.slice(2), {
+    boolean: ['p', 's'],
+    alias: {
+      h: 'help',
+      p: 'pretty',
+      s: 'strict'
+    }
+  })
   process.printUsage = printUsage.bind(process)
   process.makeError = makeError.bind(process)
   process.readStdin = readStdin.bind(process)
   process.dataRead = dataRead.bind(process)
   process.exitCode = 0
+  process.flags = {
+    pretty: argv.pretty,
+    strict: argv.strict
+  }
 
-  if (argv.h || argv.help) return process.printUsage()
+  if (argv.help) return process.printUsage()
   else if (argv.version) return process.stdout.write(`Version: ${packageJson.version}\n`) && process.exit()
 
   if (argv._.length === 0) return process.makeError('No JSPath specified.')
@@ -48,8 +59,9 @@ function dataRead (jsPathQuery, data) {
   try {
     const res = jsPath.apply(jsPathQuery, parsedData)
     if (res.length === 0) this.stdout.write('\n')
-    else if (res.length === 1) this.stdout.write(`${JSON.stringify(res[0])}\n`)
-    else this.stdout.write(`${JSON.stringify(res)}\n`)
+    else if (res.length === 1 && !this.flags.strict && typeof res[0] === 'string') this.stdout.write(`${res[0]}\n`)
+    else if (res.length === 1) this.stdout.write(`${JSON.stringify(res[0], null, this.flags.pretty ? 4 : 0)}\n`)
+    else this.stdout.write(`${JSON.stringify(res, null, this.flags.pretty ? 4 : 0)}\n`)
   } catch (e) {
     return this.makeError(`JSPath error: ${e.message}`)
   }
@@ -65,13 +77,14 @@ function makeError (error) {
 
 function printUsage () {
   this.stdout.write(`Usage:
-  \tjspath <jspath> (file | [-])
-  \tjspath -h | --help
-  \tjspath --version
+  jspath <options> <jspath> (file | [-])
 
   Options:
-  \t-h --help\tShow this message.
-  \t--version\tShow version.\n`)
+  -h --help   Show this message.
+  --version   Show version.
+  -p --pretty Enable pretty printing.
+  -s --strict Enable strict mode, always conform to the JSON spec.
+`)
 
   this.exit()
 }

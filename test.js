@@ -11,13 +11,13 @@ const it = require('mocha/lib/mocha.js').it
 const describe = require('mocha/lib/mocha.js').describe
 
 const helpOutput = `Usage:
-  \tjspath <jspath> (file | [-])
-  \tjspath -h | --help
-  \tjspath --version
+  jspath <options> <jspath> (file | [-])
 
   Options:
-  \t-h --help\tShow this message.
-  \t--version\tShow version.
+  -h --help   Show this message.
+  --version   Show version.
+  -p --pretty Enable pretty printing.
+  -s --strict Enable strict mode, always conform to the JSON spec.
 `
 
 const versionOutput = `Version: ${packageJson.version}\n`
@@ -110,7 +110,7 @@ describe('JSPath CLI output', () => {
     assertOutput(['.c[1]'], JSON.stringify(mockData), '', `${mockData.c[1]}\n`, done)
   })
   it('Prints matched string quoted if the strict flag is set', (done) => {
-    assertOutput(['-s', '.c[1]'], JSON.stringify(mockData), '', `${mockData.c[1]}\n`, done)
+    assertOutput(['-s', '.c[1]'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.c[1])}\n`, done)
   })
   it('Prints matched number unquoted in all cases', (done) => {
     assertOutput(['.b'], JSON.stringify(mockData), '', `${mockData.b}\n`, done)
@@ -125,9 +125,9 @@ describe('JSPath CLI output', () => {
     assertOutput(['.a'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.a)}\n`, done)
   })
   it('Prints matched array pretty-printed if the pretty flag is set', (done) => {
-    assertOutput(['-p', '.c'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.c)}\n`, done)
+    assertOutput(['-p', '.c'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.c, null, 4)}\n`, done)
   })
   it('Prints matched object pretty-printed if the pretty flag is set', (done) => {
-    assertOutput(['-p', '.a'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.a)}\n`, done)
+    assertOutput(['-p', '.a'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.a, null, 4)}\n`, done)
   })
 })
