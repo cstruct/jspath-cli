@@ -23,3 +23,16 @@ With `stdin`:
 ```sh
 cat some-file.json | jspath '.some.path'
 ```
+Enable pretty-printing with the `p` or `pretty` flags.
+
+By default the JSPath cli defaults to outputting unquoted strings for single matched strings.
+This behaviour can be changed by enabling strict mode with the `s` or `strict` flags.
+Enabling strict mode forces JSON specification compliance.
+
+## Support
+
+Please [open an issue](https://github.com/cstruct/jspath-cli/issues/new) for support.
+
+## Contributing
+
+Please contribute by [opening a pull request](https://github.com/cstruct/jspath-cli/compare/).
