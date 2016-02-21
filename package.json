@@ -24,6 +24,7 @@
     "standard": "^6.0.5"
   },
   "dependencies": {
-    "jspath": "latest"
+    "jspath": "latest",
+    "minimist": "^1.2.0"
   }
 }

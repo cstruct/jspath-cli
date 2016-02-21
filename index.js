@@ -3,22 +3,21 @@
 const fs = require('fs')
 const jsPath = require('jspath')
 const packageJson = require('./package.json')
+const minimist = require('minimist')
 
 module.exports = (process) => {
+  var argv = minimist(process.argv.slice(2))
   process.printUsage = printUsage.bind(process)
   process.makeError = makeError.bind(process)
   process.readStdin = readStdin.bind(process)
   process.dataRead = dataRead.bind(process)
   process.exitCode = 0
 
-  const firstArg = process.argv.length > 2 ? process.argv[ 2 ] : null
-  const filePathArg = process.argv.length > 3 ? process.argv[ 3 ] : null
+  if (argv.h || argv.help) return process.printUsage()
+  else if (argv.version) return process.stdout.write(`Version: ${packageJson.version}\n`) && process.exit()
 
-  if (firstArg === '-h' || firstArg === '--help') return process.printUsage()
-  else if (firstArg === '--version') return process.stdout.write(`Version: ${packageJson.version}\n`) && process.exit()
-
-  if (typeof firstArg !== 'string') return process.makeError('No JSPath specified.')
-  else process.readStdin(firstArg, filePathArg)
+  if (argv._.length === 0) return process.makeError('No JSPath specified.')
+  else process.readStdin(argv._[0], argv._[1])
 }
 
 function readStdin (jsPathQuery, filePathArg) {
