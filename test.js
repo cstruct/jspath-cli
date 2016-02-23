@@ -2,13 +2,17 @@
 
 'use strict'
 
-const assert = require('assert')
-const stream = require('stream')
+const chai = require('chai')
+const chaiAsPromised = require('chai-as-promised')
+
+const run = require('./test/process-runner')
+
 const packageJson = require('./package.json')
 const mockData = require('./mock.json')
-const cli = require('./index.js')
-const it = require('mocha/lib/mocha.js').it
-const describe = require('mocha/lib/mocha.js').describe
+
+const expect = chai.expect
+
+chai.use(chaiAsPromised)
 
 const helpOutput = `Usage:
   jspath <options> <jspath> (file | [-])
@@ -20,114 +24,153 @@ const helpOutput = `Usage:
   -s --strict Enable strict mode, always conform to the JSON spec.
 `
 
-const versionOutput = `Version: ${packageJson.version}\n`
+const mockJson = JSON.stringify(mockData)
 
-const validFile = 'mock.json'
-const invalidFile = `someNoneExistentFile${Math.random()}.json`
+const versionOutput = `Version: ${packageJson.version}\n`
 
 const noJsPathError = 'No JSPath specified.\n'
 const noFileOrStdinError = 'File or stdin needs to be specified.\n'
-const fileError = `ENOENT: no such file or directory, open '${invalidFile}'\n`
+const fileError = `ENOENT: no such file or directory, open 'someNoneExistentFile.json'\n`
 const jsonError = 'JSON parse error: Unexpected token a\n'
 const jsPathError = 'JSPath error: Unexpected token "€"\n'
 
-function assertOutput (args, stdinContent, expectedStderr, expectedStdout, done) {
-  let stdoutContent = ''
-  let stderrContent = ''
-
-  const stdin = new stream.Readable()
-  stdin.readable = true
-  stdin.destroy = () => {}
-  stdinContent && stdin.push(stdinContent)
-  stdin.push(null)
-  const stdout = new stream.Writable({
-    write: (chunk, encoding, next) => {
-      stdoutContent += chunk.toString()
-      next()
-    }
-  })
-  const stderr = new stream.Writable({
-    write: (chunk, encoding, next) => {
-      stderrContent += chunk.toString()
-      next()
-    }
-  })
-
-  const process = {
-    argv: ['', ''].concat(args),
-    stdin,
-    stdout,
-    stderr,
-    exit: () => {
-      assert.equal(stderrContent, expectedStderr)
-      assert.equal(stdoutContent, expectedStdout)
-
-      done()
-    }
-  }
-
-  cli(process)
-}
-
 describe('JSPath CLI', () => {
-  it('Show help for -h', (done) => {
-    assertOutput(['-h'], null, '', helpOutput, done)
+  describe('Options', () => {
+    it('shows help for `-h`', () => {
+      return expect(run `jspath -h`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: helpOutput
+      })
+    })
+    it('shows help for `--help`', () => {
+      return expect(run `jspath --help`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: helpOutput
+      })
+    })
+    it('shows version for --version', () => {
+      return expect(run `jspath --version`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: versionOutput
+      })
+    })
+    it('prints matched array pretty-printed if the pretty option is set with `-p`', () => {
+      return expect(run `jspath -p '.c' mock.json`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: `${JSON.stringify(mockData.c, null, 4)}\n`
+      })
+    })
+    it('prints matched array pretty-printed if the pretty option is set with `--pretty`', () => {
+      return expect(run `jspath --pretty '.c' mock.json`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: `${JSON.stringify(mockData.c, null, 4)}\n`
+      })
+    })
+    it('defaults to printing array minified if the pretty option is not set', () => {
+      return expect(run `jspath '.c' mock.json`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: `${JSON.stringify(mockData.c)}\n`
+      })
+    })
+    it('prints matched object pretty-printed if the pretty option is set with `-p`', () => {
+      return expect(run `jspath -p '.a' mock.json`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: `${JSON.stringify(mockData.a, null, 4)}\n`
+      })
+    })
+    it('prints matched object pretty-printed if the pretty option is set with `--pretty`', () => {
+      return expect(run `jspath --pretty '.a' mock.json`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: `${JSON.stringify(mockData.a, null, 4)}\n`
+      })
+    })
+    it('defaults to printing object minified if the pretty option is not set', () => {
+      return expect(run `jspath '.a' mock.json`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: `${JSON.stringify(mockData.a)}\n`
+      })
+    })
+    it('prints matched string quoted if the strict option is set with `-s`', () => {
+      return expect(run `jspath -s '.c[1]' mock.json`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: `${JSON.stringify(mockData.c[1])}\n`
+      })
+    })
+    it('prints matched string quoted if the strict option is set with `-s`', () => {
+      return expect(run `jspath --strict '.c[1]' mock.json`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: `${JSON.stringify(mockData.c[1])}\n`
+      })
+    })
+    it('defaults to printing the string unquoted if the strict option is not set', () => {
+      return expect(run `jspath '.c[1]' mock.json`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: `${mockData.c[1]}\n`
+      })
+    })
   })
-  it('Show help for --help', (done) => {
-    assertOutput(['--help'], null, '', helpOutput, done)
+  describe('Input', () => {
+    it('accepts valid JSPath and valid file', () => {
+      return expect(run `jspath '.b' mock.json`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: `2\n`
+      })
+    })
+    it('accepts valid JSPath and valid stdin', () => {
+      return expect(run `cat ${mockJson} | jspath '.b'`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: `2\n`
+      })
+    })
   })
-  it('Show version for --version', (done) => {
-    assertOutput(['--version'], null, '', versionOutput, done)
-  })
-  it('Accept valid JSPath and valid file', (done) => {
-    assertOutput(['.b', validFile], null, '', '2\n', done)
-  })
-  it('Accept valid JSPath and valid stdin', (done) => {
-    assertOutput(['.b'], JSON.stringify(mockData), '', '2\n', done)
-  })
-  it('Print error and help on no JSPath', (done) => {
-    assertOutput([], null, noJsPathError, helpOutput, done)
-  })
-  it('Print error and help on no file or stdin', (done) => {
-    assertOutput(['.b'], null, noFileOrStdinError, helpOutput, done)
-  })
-  it('Print error and help on file read error', (done) => {
-    assertOutput(['.b', invalidFile], null, fileError, helpOutput, done)
-  })
-  it('Print error and help on invalid JSON', (done) => {
-    assertOutput(['.b'], 'abc123', jsonError, helpOutput, done)
-  })
-  it('Print error and help on invalid JSPath', (done) => {
-    assertOutput(['€€'], JSON.stringify(mockData), jsPathError, helpOutput, done)
-  })
-})
-
-describe('JSPath CLI output', () => {
-  it('Prints a newline for unmatched JSPath', (done) => {
-    assertOutput(['.z'], JSON.stringify(mockData), '', '\n', done)
-  })
-  it('Prints matched string unquoted if the strict flag is not set', (done) => {
-    assertOutput(['.c[1]'], JSON.stringify(mockData), '', `${mockData.c[1]}\n`, done)
-  })
-  it('Prints matched string quoted if the strict flag is set', (done) => {
-    assertOutput(['-s', '.c[1]'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.c[1])}\n`, done)
-  })
-  it('Prints matched number unquoted in all cases', (done) => {
-    assertOutput(['.b'], JSON.stringify(mockData), '', `${mockData.b}\n`, done)
-  })
-  it('Prints matched boolean unquoted in all cases', (done) => {
-    assertOutput(['.c[2]'], JSON.stringify(mockData), '', `${mockData.c[2]}\n`, done)
-  })
-  it('Prints matched array minified if the pretty flag is not set', (done) => {
-    assertOutput(['.c'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.c)}\n`, done)
-  })
-  it('Prints matched object minified if the pretty flag is not set', (done) => {
-    assertOutput(['.a'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.a)}\n`, done)
-  })
-  it('Prints matched array pretty-printed if the pretty flag is set', (done) => {
-    assertOutput(['-p', '.c'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.c, null, 4)}\n`, done)
-  })
-  it('Prints matched object pretty-printed if the pretty flag is set', (done) => {
-    assertOutput(['-p', '.a'], JSON.stringify(mockData), '', `${JSON.stringify(mockData.a, null, 4)}\n`, done)
+  describe('Output', () => {
+    it('contains error and help on no JSPath', () => {
+      return expect(run `jspath`).to.eventually.deep.equal({
+        stderr: noJsPathError,
+        stdout: helpOutput
+      })
+    })
+    it('contains error and help on no file or stdin', () => {
+      return expect(run `jspath '.b'`).to.eventually.deep.equal({
+        stderr: noFileOrStdinError,
+        stdout: helpOutput
+      })
+    })
+    it('contains error and help on file read error', () => {
+      return expect(run `jspath '.b' someNoneExistentFile.json`).to.eventually.deep.equal({
+        stderr: fileError,
+        stdout: helpOutput
+      })
+    })
+    it('contains error and help on invalid JSON', () => {
+      return expect(run `echo ${'abc123'} | jspath '.b'`).to.eventually.deep.equal({
+        stderr: jsonError,
+        stdout: helpOutput
+      })
+    })
+    it('contains error and help on invalid JSPath', () => {
+      return expect(run `jspath '€€' mock.json`).to.eventually.deep.equal({
+        stderr: jsPathError,
+        stdout: helpOutput
+      })
+    })
+    it('is a newline for unmatched JSPath', () => {
+      return expect(run `jspath '.z' mock.json`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: '\n'
+      })
+    })
+    it('is the matched number unquoted', () => {
+      return expect(run `jspath '.b' mock.json`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: `${mockData.b}\n`
+      })
+    })
+    it('is the matched boolean unquoted', () => {
+      return expect(run `jspath '.c[2]' mock.json`).to.eventually.deep.equal({
+        stderr: '',
+        stdout: `${mockData.c[ 2 ]}\n`
+      })
+    })
   })
 })
