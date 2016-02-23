@@ -4,12 +4,12 @@ const cli = require('../index.js')
 const stream = require('stream')
 
 module.exports = function jspath (strings, values) {
-  const params = [].concat.apply([], strings.map(x => x.replace(/'/g, '').split(' ')))
+  const params = [].concat.apply([], strings.map((x) => x.replace(/'/g, '').split(' ')))
 
   if (!~params.indexOf('jspath')) throw new Error('Needs to emulate a call to jspath.')
 
   const filter = ['|', 'jspath', 'cat', 'echo']
-  const argv = params.filter(x => x && !~filter.indexOf(x))
+  const argv = params.filter((x) => x && !~filter.indexOf(x))
 
   let stdoutContent = ''
   let stderrContent = ''
