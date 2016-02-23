@@ -26,5 +26,13 @@
   "dependencies": {
     "jspath": "latest",
     "minimist": "^1.2.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cstruct/jspath-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cstruct/jspath-cli/issues"
+  },
+  "homepage": "https://github.com/cstruct/jspath-cli#readme"
 }
