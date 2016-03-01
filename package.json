@@ -1,6 +1,6 @@
 {
   "name": "jspath-cli",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A small CLI wrapper around jspath.",
   "main": "index.js",
   "bin": {
