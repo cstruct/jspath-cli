@@ -58,10 +58,11 @@ function dataRead (jsPathQuery, data) {
   }
   try {
     const res = jsPath.apply(jsPathQuery, parsedData)
-    if (res.length === 0) this.stdout.write('\n')
-    else if (res.length === 1 && !this.flags.strict && typeof res[0] === 'string') this.stdout.write(`${res[0]}\n`)
-    else if (res.length === 1) this.stdout.write(`${JSON.stringify(res[0], null, this.flags.pretty ? 4 : 0)}\n`)
-    else this.stdout.write(`${JSON.stringify(res, null, this.flags.pretty ? 4 : 0)}\n`)
+    const normalized = Array.isArray(res) ? res : [res]
+    if (normalized.length === 0) this.stdout.write('\n')
+    else if (normalized.length === 1 && !this.flags.strict && typeof normalized[0] === 'string') this.stdout.write(`${normalized[0]}\n`)
+    else if (normalized.length === 1 && !this.flags.strict) this.stdout.write(`${JSON.stringify(normalized[0], null, this.flags.pretty ? 4 : 0)}\n`)
+    else this.stdout.write(`${JSON.stringify(normalized, null, this.flags.pretty ? 4 : 0)}\n`)
   } catch (e) {
     return this.makeError(`JSPath error: ${e.message}`)
   }
