@@ -3,6 +3,11 @@
 [![Build Status](https://travis-ci.org/BoyCook/SpaceUI.png?branch=master)](https://travis-ci.org/cstruct/jspath-cli.svg?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/cstruct/jspath-cli/badge.svg?branch=master)](https://coveralls.io/github/cstruct/jspath-cli?branch=master)
 
+[![Dependency Status](https://david-dm.org/cstruct/jspath-cli.svg)](https://david-dm.org/cstruct/jspath-cli)
+[![devDependency Status](https://david-dm.org/cstruct/jspath-cli/dev-status.svg)](https://david-dm.org/cstruct/jspath-cli#info=devDependencies)
+
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
+
 [![NPM](https://nodei.co/npm/jspath-cli.png)](https://nodei.co/npm/jspath-cli)
 
 A small CLI wrapper around [JSPath](https://npmjs.com/jspath). Support for working with `stdin` and file paths
