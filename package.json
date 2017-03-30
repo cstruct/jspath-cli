@@ -24,7 +24,7 @@
     "istanbul": "^0.4.2",
     "mocha": "^3.0.0",
     "mocha-lcov-reporter": "^1.1.0",
-    "standard": "^9.0.0"
+    "standard": "^9.0.2"
   },
   "dependencies": {
     "jspath": "latest",
