@@ -17,7 +17,7 @@
   "author": "Albin Mattsson <albin.mattsson@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "chai": "^3.5.0",
+    "chai": "^4.0.0",
     "chai-as-promised": "^6.0.0",
     "coveralls": "^2.13.0",
     "cz-conventional-changelog": "^2.0.0",
